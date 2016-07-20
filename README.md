@@ -1,8 +1,9 @@
 # PySignal
 
 A Qt style signal implementation that doesn't require QObjects.
-    Unlike Qt, this must be instantiated as an instance variable and not as a class variable
-        otherwise every instance will share one signal object
+Unlike Qt, this must be instantiated as an instance variable and not as a class variable otherwise every instance will share one signal object
+
+This supports class methods, functions, lambdas and partials
 
 ## Usage:
 
@@ -13,7 +14,7 @@ def greet(name):
 class Foo(object):
     def __init__(self):
         super(Foo, self).__init__()
-        self.started = Signal(self)
+        self.started = Signal()
         self.started.connect(greet)
         self.started.emit('Watson')
 
