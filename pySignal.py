@@ -69,7 +69,7 @@ class Signal(object):
         """
         if isinstance(slot, partial):
             self._partials.append(slot)
-        elif slot.func_name == '<lambda>':
+        elif hasattr(slot, 'func_name') and slot.func_name == '<lambda>':
             self._lambdas.append(slot)
         elif inspect.ismethod(slot):
             slotSelf = slot.__self__
@@ -83,7 +83,7 @@ class Signal(object):
         """
         if isinstance(slot, partial):
             self._partials.remove(slot)
-        elif slot.func_name == '<lambda>':
+        elif hasattr(slot, 'func_name') and slot.func_name == '<lambda>':
             self._lambdas.remove(slot)
         elif inspect.ismethod(slot):
             slotSelf = slot.__self__
@@ -102,3 +102,4 @@ class Signal(object):
     def block(self, value):
         """Sets blocking of the signal"""
         self._block = bool(value)
+
