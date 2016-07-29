@@ -1,28 +1,38 @@
 import pySignal
 from functools import partial
+try:
+    import unittest2 as unittest
+except:
+    import unittest
 
-def greet(name, leaving=False):
-    print("%s, %s" % ('Goodbye' if leaving else 'Hello', name))
-
-class Foo(object):
-    spam = pySignal.ClassSignal()
-
-    def __init__(self):
-        super(Foo, self).__init__()
-        # self.spam = pySignal.Signal()
-
-        self.spam.connect(self.greet)
-        self.spam.connect(greet)
-        self.spam.connect(lambda name, leaving=True: greet('Lambda', leaving=True))
-        self.spam.connect(partial(greet, 'partial', leaving=False))
+def testFunc(value):
+    print("Ran for %s" % value)
 
 
-    def greet(self, name, leaving=False):
-        greet("Method", leaving)
+class SignalTestRunner(unittest.TestCase):
 
+    def test_partialConnect(self):
+        partialSignal = pySignal.Signal()
+        partialSignal.connect(partial(testFunc, 'Partial'))
+        partialSignal.emit()
 
-foo1 = Foo()
-foo2 = Foo()
+    def test_lambdaConnect(self):
+        lambdaSignal = pySignal.Signal()
+        lambdaSignal.connect(lambda value: testFunc(value))
+        lambdaSignal.emit('Lambda')
 
-foo1.spam.emit('Watson')
-foo2.spam.emit('Sherlock')
+    def testMethod(self, value=2):
+        print("Method called with %s" % value)
+
+    def test_methodConnect(self):
+        methodSignal = pySignal.Signal()
+        methodSignal.connect(self.testMethod)
+        methodSignal.emit(value=5)
+
+    def test_functionConnect(self):
+        funcSignal = pySignal.Signal()
+        funcSignal.connect(testFunc)
+        funcSignal.emit("Function")
+
+if __name__ == '__main__':
+    unittest.main()
