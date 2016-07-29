@@ -1,9 +1,10 @@
 # PySignal
 
 A Qt style signal implementation that doesn't require QObjects.
-Unlike Qt, this must be instantiated as an instance variable and not as a class variable otherwise every instance will share one signal object
+This supports class methods, functions, lambdas and partials.
 
-This supports class methods, functions, lambdas and partials
+Signals can either be created on the instance or on the class, and can be handled either as objects or by string name.
+Unlike PyQt signals, PySignals do not enforce types by default as I believe this is more pythonic.
 
 ## Usage:
 
@@ -12,9 +13,10 @@ def greet(name):
     print "Hello,", name
 
 class Foo(object):
+    started = ClassSignal()
+
     def __init__(self):
         super(Foo, self).__init__()
-        self.started = Signal()
         self.started.connect(greet)
         self.started.emit('Watson')
 
