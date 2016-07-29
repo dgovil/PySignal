@@ -37,10 +37,8 @@ class Signal(object):
     def __init__(self):
         super(Signal, self).__init__()
         self._block = False
-        self._lambdas = []
-        self._partials = []
-        self._functions = weakref.WeakSet()
-        self._methods = weakref.WeakKeyDictionary()
+        self._slots = []
+
 
     def emit(self, *args, **kwargs):
         """
@@ -50,54 +48,49 @@ class Signal(object):
         if self._block:
             return
 
-        for func in self._partials:
-            func()
-
-        for func in self._lambdas:
-            func(*args, **kwargs)
-
-        for func in self._functions:
-            func(*args, **kwargs)
-
-        for obj, funcs in self._methods.items():
-            for func in funcs:
-                func(obj, *args, **kwargs)
+        for slot in self._slots:
+            if not slot:
+                continue
+            elif isinstance(slot, partial):
+                slot()
+            elif isinstance(slot, weakref.WeakKeyDictionary):
+                for obj, method in slot.items():
+                    method(obj, *args, **kwargs)
+            elif isinstance(slot, weakref.ref):
+                slot()(*args, **kwargs)
+            else:
+                slot(*args, **kwargs)
 
     def connect(self, slot):
         """
         Connects the signal to any callable object
         """
-        if isinstance(slot, partial):
-            self._partials.append(slot)
-        elif hasattr(slot, 'func_name') and slot.func_name == '<lambda>':
-            self._lambdas.append(slot)
+        if isinstance(slot, partial) or '<' in slot.__name__:
+            self._slots.append(slot)
         elif inspect.ismethod(slot):
             slotSelf = slot.__self__
-            self._methods.setdefault(slotSelf, set()).add(slot.__func__)
+            slotDict = weakref.WeakKeyDictionary()
+            slotDict[slotSelf] = slot.__func__
+            self._slots.append(slotDict)
         else:
-            self._functions.add(slot)
+            self._slots.append(weakref.ref(slot))
 
     def disconnect(self, slot):
         """
         Disconnects the slot from the signal
         """
-        if isinstance(slot, partial):
-            self._partials.remove(slot)
-        elif hasattr(slot, 'func_name') and slot.func_name == '<lambda>':
-            self._lambdas.remove(slot)
-        elif inspect.ismethod(slot):
-            slotSelf = slot.__self__
-            if slotSelf in self._methods:
-                self._methods[slotSelf].remove(slot.__func__)
 
-        else:
-            if slot in self._functions:
-                self._functions.remove(slot)
+        if inspect.ismethod(slot):
+            slotSelf = slot.__self__
+            for _slot in self._slots:
+                if isinstance(_slot, weakref.WeakKeyDictionary) and slotSelf in _slot:
+                    self._slots.remove(slot)
+        elif slot in self._slots:
+                self._slots.remove(slot)
 
     def clear(self):
         """Clears the signal of all connected slots"""
-        self._functions.clear()
-        self._methods.clear()
+        self._slots = []
 
     def block(self, value):
         """Sets blocking of the signal"""
