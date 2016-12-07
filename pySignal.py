@@ -151,4 +151,14 @@ class SignalFactory(dict):
             self[signal].block(state)
 
 
+class ClassSignalFactory(object):
+    """
+    The class signal allows a signal factory to be set on a class rather than an instance.
+    """
+    _map = {}
+    def __get__(self, instance, owner):
+        tmp = self._map.setdefault(self, weakref.WeakKeyDictionary())
+        return tmp.setdefault(instance, SignalFactory())
 
+    def __set__(self, instance, value):
+        raise RuntimeError("Cannot assign to a Signal object")
