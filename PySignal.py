@@ -1,3 +1,12 @@
+__author__ = "Dhruv Govil"
+__copyright__ = "Copyright 2016, Dhruv Govil"
+__credits__ = ["Dhruv Govil", "John Hood", "Jason Viloria"]
+__license__ = "MIT"
+__version__ = "1.0.0"
+__maintainer__ = "Dhruv Govil"
+__email__ = "dhruvagovil@gmail.com"
+__status__ = "Beta"
+
 import inspect
 import weakref
 from functools import partial
@@ -95,7 +104,7 @@ class SignalFactory(dict):
     """
     The Signal Factory object lets you handle signals by a string based name instead of by objects.
     """
-    def register(self, name):
+    def register(self, name, *slots):
         """
         Registers a given signal
         :param name: the signal to register
@@ -103,6 +112,9 @@ class SignalFactory(dict):
         # setdefault initializes the object even if it exists. This is more efficient
         if name not in self:
             self[name] = Signal()
+
+        for slot in slots:
+            self[name].connect(slot)
 
     def deregister(self, name):
         """
