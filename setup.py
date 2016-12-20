@@ -23,8 +23,7 @@ classifiers = [
 setup(
     name="PySignal",
     version=PySignal.__version__,
-    description="Python 2 & 3 compatibility wrapper around all Qt bindings - "
-                "PySide, PySide2, PyQt4 and PyQt5.",
+    description="Python Signal Library to mimic the Qt Signal system for event driven connections",
     author=PySignal.__author__,
     author_email=PySignal.__email__,
     url="https://github.com/dgovil/PySignal",
