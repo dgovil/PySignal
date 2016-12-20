@@ -1,11 +1,11 @@
 from __future__ import print_function
 import PySignal
 from functools import partial
+
 try:
     import unittest2 as unittest
 except:
     import unittest
-
 
 
 def testFunc(value):
@@ -15,18 +15,19 @@ def testFunc(value):
     print("Ran for %s" % value)
     SignalTest.checkval = value
 
-class DummySignalClass(object):
-     """A dummy class to check for instance handling of signals"""
-     cSignal = PySignal.ClassSignal()
-     cSignalFactory = PySignal.ClassSignalFactory()
 
-     def __init__(self):
-         self.signal = PySignal.Signal()
-         self.signalFactory = PySignal.SignalFactory()
+class DummySignalClass(object):
+    """A dummy class to check for instance handling of signals"""
+    cSignal = PySignal.ClassSignal()
+    cSignalFactory = PySignal.ClassSignalFactory()
+
+    def __init__(self):
+        self.signal = PySignal.Signal()
+        self.signalFactory = PySignal.SignalFactory()
 
 
 class SignalTest(unittest.TestCase):
-    checkval = None # A state check for the tests
+    checkval = None  # A state check for the tests
 
     def setVal(self, val):
         """A method to test instance settings with"""
@@ -127,7 +128,6 @@ class SignalTest(unittest.TestCase):
 
         dummy.signalFactory['Spam'].emit(202)
         self.assertNotEqual(self.checkval, 202)
-
 
 
 if __name__ == '__main__':

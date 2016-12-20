@@ -21,7 +21,6 @@ class Signal(object):
         self._block = False
         self._slots = []
 
-
     def emit(self, *args, **kwargs):
         """
         Calls all the connected slots with the provided args and kwargs unless block is activated
@@ -60,7 +59,7 @@ class Signal(object):
             slotDict[slotSelf] = slot.__func__
             self._slots.append(slotDict)
         else:
-            # If it's just a function then just store it ass a weakref.
+            # If it's just a function then just store it as a weakref.
             self._slots.append(weakref.ref(slot))
 
     def disconnect(self, slot):
@@ -85,13 +84,13 @@ class Signal(object):
         self._block = bool(value)
 
 
-
 class ClassSignal(object):
     """
     The class signal allows a signal to be set on a class rather than an instance.
     This emulates the behavior of a PyQt signal
     """
     _map = {}
+
     def __get__(self, instance, owner):
         tmp = self._map.setdefault(self, weakref.WeakKeyDictionary())
         return tmp.setdefault(instance, Signal())
@@ -168,6 +167,7 @@ class ClassSignalFactory(object):
     The class signal allows a signal factory to be set on a class rather than an instance.
     """
     _map = {}
+
     def __get__(self, instance, owner):
         tmp = self._map.setdefault(self, weakref.WeakKeyDictionary())
         return tmp.setdefault(instance, SignalFactory())
