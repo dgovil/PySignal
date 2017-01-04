@@ -21,7 +21,6 @@ class Signal(object):
         self._block = False
         self._slots = []
 
-
     def emit(self, *args, **kwargs):
         """
         Calls all the connected slots with the provided args and kwargs unless block is activated
@@ -41,7 +40,9 @@ class Signal(object):
                     method(obj, *args, **kwargs)
             elif isinstance(slot, weakref.ref):
                 # If it's a weakref, call the ref to get the instance and then call the func
-                slot()(*args, **kwargs)
+                # Don't wrap in try/except so we don't risk masking exceptions from the actual func call
+                if (slot() is not None):
+                    slot()(*args, **kwargs)
             else:
                 # Else call it in a standard way. Should be just lambdas at this point
                 slot(*args, **kwargs)
@@ -50,40 +51,60 @@ class Signal(object):
         """
         Connects the signal to any callable object
         """
-        if isinstance(slot, partial) or '<' in slot.__name__:
+        if not callable(slot):
+            raise ValueError("Connection to non-callable '%s' object failed" % slot.__class__.__name__)
+
+        if (isinstance(slot, partial) or '<' in slot.__name__):
             # If it's a partial or a lambda. The '<' check is the only py2 and py3 compatible way I could find
-            self._slots.append(slot)
+            if slot not in self._slots:
+                self._slots.append(slot)
         elif inspect.ismethod(slot):
             # Check if it's an instance method and store it with the instance as the key
             slotSelf = slot.__self__
             slotDict = weakref.WeakKeyDictionary()
             slotDict[slotSelf] = slot.__func__
-            self._slots.append(slotDict)
+            if slotDict not in self._slots:
+                self._slots.append(slotDict)
         else:
-            # If it's just a function then just store it ass a weakref.
-            self._slots.append(weakref.ref(slot))
+            # If it's just a function then just store it as a weakref.
+            newSlotRef = weakref.ref(slot)
+            if newSlotRef not in self._slots:
+                self._slots.append(newSlotRef)
 
     def disconnect(self, slot):
         """
         Disconnects the slot from the signal
         """
+        if not callable(slot):
+            return
+
         if inspect.ismethod(slot):
             # If it's a method, then find it by its instance
             slotSelf = slot.__self__
-            for _slot in self._slots:
-                if isinstance(_slot, weakref.WeakKeyDictionary) and slotSelf in _slot:
-                    self._slots.remove(slot)
-        elif slot in self._slots:
+            for s in self._slots:
+                if isinstance(s, weakref.WeakKeyDictionary) and (slotSelf in s) and (s[slotSelf] is slot.__func__):
+                    self._slots.remove(s)
+                    break
+        elif isinstance(slot, partial) or '<' in slot.__name__:
+            # If it's a partial or lambda, try to remove directly
+            try:
                 self._slots.remove(slot)
+            except ValueError:
+                pass
+        else:
+            # It's probably a function, so try to remove by weakref
+            try:
+                self._slots.remove(weakref.ref(slot))
+            except ValueError:
+                pass
 
     def clear(self):
         """Clears the signal of all connected slots"""
         self._slots = []
 
-    def block(self, value):
+    def block(self, isBlocked):
         """Sets blocking of the signal"""
-        self._block = bool(value)
-
+        self._block = bool(isBlocked)
 
 
 class ClassSignal(object):
@@ -92,6 +113,7 @@ class ClassSignal(object):
     This emulates the behavior of a PyQt signal
     """
     _map = {}
+
     def __get__(self, instance, owner):
         tmp = self._map.setdefault(self, weakref.WeakKeyDictionary())
         return tmp.setdefault(instance, Signal())
@@ -140,12 +162,12 @@ class SignalFactory(dict):
         assert signalName in self, "%s is not a registered signal" % signalName
         self[signalName].connect(slot)
 
-    def block(self, signals=None, state=True):
+    def block(self, signals=None, isBlocked=True):
         """
         Sets the block on any provided signals, or to all signals
 
         :param signals: defaults to all signals. Accepts either a single string or a list of strings
-        :param state: the state to set the signal to
+        :param isBlocked: the state to set the signal to
         """
         if signals:
             try:
@@ -160,7 +182,7 @@ class SignalFactory(dict):
         for signal in signals:
             if signal not in self:
                 raise RuntimeError("Could not find signal matching %s" % signal)
-            self[signal].block(state)
+            self[signal].block(isBlocked)
 
 
 class ClassSignalFactory(object):
@@ -168,6 +190,7 @@ class ClassSignalFactory(object):
     The class signal allows a signal factory to be set on a class rather than an instance.
     """
     _map = {}
+
     def __get__(self, instance, owner):
         tmp = self._map.setdefault(self, weakref.WeakKeyDictionary())
         return tmp.setdefault(instance, SignalFactory())
