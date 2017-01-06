@@ -50,8 +50,29 @@ There are 4 types of Signals included
 * `SignalFactory` allows you to have a single signal object on your class that can generate signals by name.
 * `ClassSignalFactory` is the same as a signal factory but lives on the class instead of the instance.
 
+## Changelog
+
+### 1.1.1
+
+* Setup.py no longer imports the PySignal module and instead parses it.
+* Test Coverage has been expanded to 97%
+* Slots can no longer be attached multiple times which used to cause them firing multiple times.
+* Using callable to find if slot is lambda
+
+### 1.0.1
+
+* Initial Release
+
+
 ## Based on these implementations
 
 http://www.jnvilo.com/cms/programming/python/programming-in-python/signal-and-slots-implementation-in-python
 
 http://www.codeheadwords.com/2015/05/05/emulating-pyqt-signals-with-descriptors
+
+## Contributors
+
+Many thanks to:
+
+* Alex Widener for cleaning up my setup.py
+* Adric Worley for expanding test coverage, cleaning up the code and fixing a duplicate connection bug.

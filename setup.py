@@ -1,22 +1,22 @@
+import os
 import re
 import ast
 from setuptools import setup
 import PySignal
 
-
-_version_re = re.compile(r'__version__\s+=\s+(.*)')
-_author_re = re.compile(r'__author__\s+=\s+(.*)')
-_email_re = re.compile(r'__email__\s+=\s+(.*)')
-
-
 with open('PySignal.py', 'rb') as f:
-    version = str(ast.literal_eval(_version_re.search(
-        f.read().decode('utf-8')).group(1)))
-    author = str(ast.literal_eval(_author_re.search(
-        f.read().decode('utf-8')).group(1)))
-    email = str(ast.literal_eval(_email_re.search(
-        f.read().decode('utf-8')).group(1)))
+    contents = f.read().decode('utf-8')
 
+
+def parse(pattern):
+    return re.search(pattern, contents).group(1).replace('"', '').strip()
+
+def read(fname):
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
+
+version = parse(r'__version__\s+=\s+(.*)')
+author = parse(r'__author__\s+=\s+(.*)')
+email = parse(r'__email__\s+=\s+(.*)')
 
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -32,6 +32,7 @@ classifiers = [
     "Topic :: Software Development :: Libraries :: Python Modules",
     "Topic :: Utilities"
 ]
+
 
 
 setup(

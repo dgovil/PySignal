@@ -1,2 +1,4 @@
 .idea/*
 .idea
+dist
+PySignal.egg-info

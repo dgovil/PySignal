@@ -1,8 +1,8 @@
 __author__ = "Dhruv Govil"
 __copyright__ = "Copyright 2016, Dhruv Govil"
-__credits__ = ["Dhruv Govil", "John Hood", "Jason Viloria"]
+__credits__ = ["Dhruv Govil", "John Hood", "Jason Viloria", "Adric Worley", "Alex Widener"]
 __license__ = "MIT"
-__version__ = "1.0.1"
+__version__ = "1.1.1"
 __maintainer__ = "Dhruv Govil"
 __email__ = "dhruvagovil@gmail.com"
 __status__ = "Beta"
