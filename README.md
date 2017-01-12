@@ -104,6 +104,19 @@ foo2.run() # will output 42
 
 Instead of having to subclass `Foo` and implement the new behavior, we can simply reuse the exisitng Foo class and attach on to its instances.
 
+## What's missing?
+
+The goal of this library is to mimic Qt's callback system without requiring all either end of the signal/slot to be a QObject derivative.
+
+That said in the current state it is missing the following features:
+
+* It does not handle multiple threads. The slots are called in the same thread as the signal.
+  This is because I am currently not aware of a way to do this in Python without implementing an equivalent to QObject which I am trying to avoid.
+* There is no type checking. Qt requires signals to declare the type of the data they emit. This is great for C++ but I feel it's not very pythonic and so do not implement that behavior.
+* You cannot query the sender. In Qt you can check what object sent a signal. Again this relies on inheriting from a QObject and Qt managing states, which are somethings I was trying to avoid. The alternative is that you can send `self` as the first parameter of the signal. e.g. `signal.emit(self, arg1, arg2)` and the slot will need to expect the first argument to be the sender.
+
+If anyone has any suggestions or solutions on how I can overcome these caveats, I'm all ears and very willing to implement it or accept pull requests from other people too
+
 ## Comparisons To Other Libraries
 
 There are a few other libraries to compare with that implement Signals. I am not completely familiar with them so please correct me if I am wrong.
