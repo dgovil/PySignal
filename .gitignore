@@ -2,3 +2,4 @@
 .idea
 dist
 PySignal.egg-info
+*.pyc
