@@ -1,5 +1,7 @@
 # PySignal
 
+[![Build Status](https://travis-ci.org/dgovil/PySignal.svg?branch=master)](https://travis-ci.org/dgovil/PySignal)
+
 A Qt style signal implementation that doesn't require QObjects.
 This supports class methods, functions, lambdas and partials.
 
