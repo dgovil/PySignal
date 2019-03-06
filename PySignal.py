@@ -16,6 +16,7 @@ class Signal(object):
     """
     The Signal is the core object that handles connection and emission .
     """
+
     def __init__(self):
         super(Signal, self).__init__()
         self._block = False
@@ -126,6 +127,7 @@ class SignalFactory(dict):
     """
     The Signal Factory object lets you handle signals by a string based name instead of by objects.
     """
+
     def register(self, name, *slots):
         """
         Registers a given signal
@@ -190,10 +192,23 @@ class ClassSignalFactory(object):
     The class signal allows a signal factory to be set on a class rather than an instance.
     """
     _map = {}
+    _names = set()
 
     def __get__(self, instance, owner):
         tmp = self._map.setdefault(self, weakref.WeakKeyDictionary())
-        return tmp.setdefault(instance, SignalFactory())
+
+        signal = tmp.setdefault(instance, SignalFactory())
+        for name in self._names:
+            signal.register(name)
+
+        return signal
 
     def __set__(self, instance, value):
         raise RuntimeError("Cannot assign to a Signal object")
+
+    def register(self, name):
+        """
+        Registers a new signal with the given name
+        :param name: The signal to register
+        """
+        self._names.add(name)
