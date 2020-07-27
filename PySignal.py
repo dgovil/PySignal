@@ -32,17 +32,18 @@ class Signal(object):
             return
 
         def _get_sender():
+            """Try to get the bound, class or module method calling the emit."""
             prev_frame = sys._getframe(2)
             func_name = prev_frame.f_code.co_name
             # Faster to try/catch than checking for 'self'
             try:
-                return getattr(prev_frame.f_locals['self'].__class__, func_name)
+                return getattr(prev_frame.f_locals['self'], func_name)
 
             except KeyError:
                 return getattr(inspect.getmodule(prev_frame), func_name)
 
         # Get the sender
-        self._sender = weakref.ref(_get_sender())
+        self._sender = weakref.WeakMethod(_get_sender())
 
         for slot in self._slots:
             if not slot:
