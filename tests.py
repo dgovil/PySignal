@@ -23,6 +23,9 @@ class DummySignalClass(object):
         self.signal = PySignal.Signal()
         self.signalFactory = PySignal.SignalFactory()
 
+    def triggerSignal(self):
+        self.signal.emit()
+
 
 class DummySlotClass(object):
     """A dummy class to check for slot handling"""
@@ -301,6 +304,12 @@ class ClassSignalTest(unittest.TestCase, SignalTestMixin):
         dummy = DummySignalClass()
         with self.assertRaises(RuntimeError):
             dummy.cSignal = None
+
+    def test_FunctionSender(self):
+        toSucceed = DummySignalClass()
+        toSucceed.signal.connect(self.throwaway)
+        toSucceed.triggerSignal()
+        self.assertEqual(DummySignalClass.triggerSignal, toSucceed.signal.sender())
 
     # noinspection PyUnresolvedReferences
     def test_Emit(self):

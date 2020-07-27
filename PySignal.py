@@ -8,6 +8,7 @@ __email__ = "dhruvagovil@gmail.com"
 __status__ = "Beta"
 
 import inspect
+import sys
 import weakref
 from functools import partial
 
@@ -20,15 +21,28 @@ class Signal(object):
     def __init__(self):
         super(Signal, self).__init__()
         self._block = False
+        self._sender = None
         self._slots = []
 
     def emit(self, *args, **kwargs):
         """
         Calls all the connected slots with the provided args and kwargs unless block is activated
         """
-
         if self._block:
             return
+
+        def _get_sender():
+            prev_frame = sys._getframe(2)
+            func_name = prev_frame.f_code.co_name
+            # Faster to try/catch than checking for 'self'
+            try:
+                return getattr(prev_frame.f_locals['self'].__class__, func_name)
+
+            except KeyError:
+                return getattr(inspect.getmodule(prev_frame), func_name)
+
+        # Get the sender
+        self._sender = weakref.ref(_get_sender())
 
         for slot in self._slots:
             if not slot:
@@ -42,8 +56,9 @@ class Signal(object):
             elif isinstance(slot, weakref.ref):
                 # If it's a weakref, call the ref to get the instance and then call the func
                 # Don't wrap in try/except so we don't risk masking exceptions from the actual func call
-                if (slot() is not None):
-                    slot()(*args, **kwargs)
+                tested_slot = slot()
+                if tested_slot is not None:
+                    tested_slot(*args, **kwargs)
             else:
                 # Else call it in a standard way. Should be just lambdas at this point
                 slot(*args, **kwargs)
@@ -55,7 +70,7 @@ class Signal(object):
         if not callable(slot):
             raise ValueError("Connection to non-callable '%s' object failed" % slot.__class__.__name__)
 
-        if (isinstance(slot, partial) or '<' in slot.__name__):
+        if isinstance(slot, partial) or '<' in slot.__name__:
             # If it's a partial or a lambda. The '<' check is the only py2 and py3 compatible way I could find
             if slot not in self._slots:
                 self._slots.append(slot)
@@ -83,7 +98,9 @@ class Signal(object):
             # If it's a method, then find it by its instance
             slotSelf = slot.__self__
             for s in self._slots:
-                if isinstance(s, weakref.WeakKeyDictionary) and (slotSelf in s) and (s[slotSelf] is slot.__func__):
+                if (isinstance(s, weakref.WeakKeyDictionary) and
+                        (slotSelf in s) and
+                        (s[slotSelf] is slot.__func__)):
                     self._slots.remove(s)
                     break
         elif isinstance(slot, partial) or '<' in slot.__name__:
@@ -106,6 +123,14 @@ class Signal(object):
     def block(self, isBlocked):
         """Sets blocking of the signal"""
         self._block = bool(isBlocked)
+
+    def sender(self):
+        """Return the callable responsible for emitting the signal, if found."""
+        try:
+            return self._sender()
+
+        except TypeError:
+            return None
 
 
 class ClassSignal(object):
