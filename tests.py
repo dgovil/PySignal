@@ -306,6 +306,7 @@ class ClassSignalTest(unittest.TestCase, SignalTestMixin):
             dummy.cSignal = None
 
     def test_FunctionSender(self):
+        """Test correct Signal sender is found"""
         toSucceed = DummySignalClass()
         toSucceed.signal.connect(self.throwaway)
         toSucceed.triggerSignal()
