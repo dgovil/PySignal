@@ -14,6 +14,11 @@ def testFunc(test, value):
     test.func_call_count += 1
 
 
+def testLocalEmit(signal_instance):
+    """A test standalone function for signals to emit at local level"""
+    exec('signal_instance.emit()')
+
+
 class DummySignalClass(object):
     """A dummy class to check for instance handling of signals"""
     cSignal = PySignal.ClassSignal()
@@ -22,6 +27,12 @@ class DummySignalClass(object):
     def __init__(self):
         self.signal = PySignal.Signal()
         self.signalFactory = PySignal.SignalFactory()
+
+    def triggerSignal(self):
+        self.signal.emit()
+
+    def triggerClassSignal(self):
+        self.cSignal.emit()
 
 
 class DummySlotClass(object):
@@ -312,6 +323,58 @@ class ClassSignalTest(unittest.TestCase, SignalTestMixin):
         toSucceed.cSignal.emit(1)
         toFail.cSignal.emit(2)
         self.assertEqual(self.checkval, 1)
+
+    def test_DeadSenderFound(self):
+        """Test Signal sender is dead"""
+        toFail = DummySignalClass()
+        toFail.cSignal.connect(self.throwaway)
+        toFail.triggerClassSignal()
+        weak_sender = toFail.cSignal._sender
+        del toFail
+        self.assertEqual(None, weak_sender())
+
+    def test_FunctionSenderFound(self):
+        """Test correct Signal sender is found (instance method)"""
+        toSucceed = DummySignalClass()
+        toSucceed.cSignal.connect(self.throwaway)
+        toSucceed.triggerClassSignal()
+        self.assertEqual(toSucceed.triggerClassSignal, toSucceed.cSignal.sender())
+
+    def test_InstanceSenderFound(self):
+        """Test correct Signal sender is found (instance, not class method)"""
+        toSucceed = DummySignalClass()
+        toSucceed.cSignal.connect(self.throwaway)
+        toSucceed.triggerClassSignal()
+        self.assertNotEqual(DummySignalClass.triggerClassSignal, toSucceed.cSignal.sender())
+        self.assertEqual(toSucceed.triggerClassSignal, toSucceed.cSignal.sender())
+
+    def test_LambdaSenderFound(self):
+        """Test correct Signal sender is found (instance method via lambda)"""
+        toSucceed = DummySignalClass()
+        toSucceed.cSignal.connect(self.throwaway)
+        (lambda: toSucceed.triggerClassSignal())()
+        self.assertEqual(toSucceed.triggerClassSignal, toSucceed.cSignal.sender())
+
+    def test_PartialSenderFound(self):
+        """Test correct Signal sender is found (instance method via partial)"""
+        toSucceed = DummySignalClass()
+        toSucceed.cSignal.connect(self.throwaway)
+        partial(toSucceed.triggerClassSignal)()
+        self.assertEqual(toSucceed.triggerClassSignal, toSucceed.cSignal.sender())
+
+    def test_SelfSenderFound(self):
+        """Test correct Signal sender is found (self emit)"""
+        toSucceed = DummySignalClass()
+        toSucceed.cSignal.connect(self.throwaway)
+        toSucceed.cSignal.emit()
+        self.assertEqual(self.test_SelfSenderFound, toSucceed.cSignal.sender())
+
+    def test_LocalSenderHandled(self):
+        """Test correct Signal sender is found (module local emit)"""
+        toSucceed = DummySignalClass()
+        toSucceed.cSignal.connect(self.throwaway)
+        testLocalEmit(toSucceed.cSignal)
+        self.assertEqual(None, toSucceed.cSignal.sender())
 
 
 class SignalFactoryTest(unittest.TestCase, SignalTestMixin):
