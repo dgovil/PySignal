@@ -19,6 +19,11 @@ def testLocalEmit(signal_instance):
     exec('signal_instance.emit()')
 
 
+def testModuleEmit(signal_instance):
+    """A test standalone function for signals to emit at module level"""
+    signal_instance.emit()
+
+
 class DummySignalClass(object):
     """A dummy class to check for instance handling of signals"""
     cSignal = PySignal.ClassSignal()
@@ -371,10 +376,17 @@ class ClassSignalTest(unittest.TestCase, SignalTestMixin):
 
     def test_LocalSenderHandled(self):
         """Test correct Signal sender is found (module local emit)"""
-        toSucceed = DummySignalClass()
-        toSucceed.cSignal.connect(self.throwaway)
-        testLocalEmit(toSucceed.cSignal)
-        self.assertEqual(None, toSucceed.cSignal.sender())
+        toFail = DummySignalClass()
+        toFail.cSignal.connect(self.throwaway)
+        testLocalEmit(toFail.cSignal)
+        self.assertEqual(None, toFail.cSignal.sender())
+
+    def test_ModuleSenderHandled(self):
+        """Test correct Signal sender is found (module local emit)"""
+        toFail = DummySignalClass()
+        toFail.cSignal.connect(self.throwaway)
+        testModuleEmit(toFail.cSignal)
+        self.assertEqual(None, toFail.cSignal.sender())
 
 
 class SignalFactoryTest(unittest.TestCase, SignalTestMixin):
