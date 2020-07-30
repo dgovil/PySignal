@@ -88,6 +88,7 @@ class Signal(object):
             """Try to get the bound, class or module method calling the emit."""
             prev_frame = sys._getframe(2)
             func_name = prev_frame.f_code.co_name
+
             # Faster to try/catch than checking for 'self'
             try:
                 return getattr(prev_frame.f_locals['self'], func_name)
@@ -96,7 +97,12 @@ class Signal(object):
                 return getattr(inspect.getmodule(prev_frame), func_name)
 
         # Get the sender
-        self._sender = WeakMethod(_get_sender())
+        try:
+            self._sender = WeakMethod(_get_sender())
+
+        # Account for when func_name is at '<module>'
+        except AttributeError:
+            self._sender = None
 
         for slot in self._slots:
             if not slot:
