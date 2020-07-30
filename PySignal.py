@@ -104,7 +104,8 @@ class Signal(object):
         except AttributeError:
             self._sender = None
 
-        # Handle unsupported module level methods
+        # Handle unsupported module level methods for WeakMethod.
+        # TODO: Support module level methods.
         except TypeError:
             self._sender = None
 
