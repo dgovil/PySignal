@@ -13,6 +13,49 @@ import weakref
 from functools import partial
 
 
+# weakref.WeakMethod backport
+try:
+    from weakref import WeakMethod
+
+except ImportError:
+    import types
+
+    class WeakMethod(object):
+        """Light WeakMethod backport compiled from various sources. Tested in 2.7"""
+
+        def __init__(self, func):
+            if inspect.ismethod(func):
+                self._obj = weakref.ref(func.__self__)
+                self._func = weakref.ref(func.__func__)
+
+            else:
+                self._obj = None
+
+                try:
+                    self._func = weakref.ref(func.__func__)
+
+                # Rather than attempting to handle this, raise the same exception
+                # you get from WeakMethod.
+                except AttributeError:
+                    raise TypeError("argument should be a bound method, not %s" % type(func))
+
+        def __call__(self):
+            if self._obj is not None:
+                obj = self._obj()
+                func = self._func()
+                if func is None or obj is None:
+                    return None
+
+                else:
+                    return types.MethodType(func, obj)
+
+            elif self._func is not None:
+                return self._func()
+
+            else:
+                return None
+
+
 class Signal(object):
     """
     The Signal is the core object that handles connection and emission .
@@ -43,7 +86,7 @@ class Signal(object):
                 return getattr(inspect.getmodule(prev_frame), func_name)
 
         # Get the sender
-        self._sender = weakref.WeakMethod(_get_sender())
+        self._sender = WeakMethod(_get_sender())
 
         for slot in self._slots:
             if not slot:
