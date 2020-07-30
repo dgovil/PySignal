@@ -75,7 +75,6 @@ Signals allow for creating a callback interface on your object and allows for it
 For example I can define the following
 
 ```python
-
 class Foo(object):
     started = ClassSignal()
     ended = ClassSignal()
@@ -89,7 +88,7 @@ class Foo(object):
 This does a few things:
 
 * It guarantees that any instances of Foo or it's subclasses will always have the started and ended Signals. This allows for a guaranteed interface.
-* It means that when we want to add callbacks to Foo, we can do so on a case by case basis without having to subclass it to call the slots explicitely.
+* It means that when we want to add callbacks to Foo, we can do so on a case by case basis without having to subclass it to call the slots explicitly.
 
 For example:
 
@@ -104,7 +103,20 @@ foo1.run() # will output I am foo1
 foo2.run() # will output 42
 ```
 
-Instead of having to subclass `Foo` and implement the new behavior, we can simply reuse the exisitng Foo class and attach on to its instances.
+We can also get the Signal's "sender" - the bound method responsible for emitting the signal, if available.
+
+For example:
+
+```python
+bar_run1 = foo1.started.sender() # will output <bound method Foo.run of <__main__.Foo object at ...>>
+bar_run2 = foo2.started.sender() # will output <bound method Foo.run of <__main__.Foo object at ...>>
+
+print(bar_run1 == foo1.run) # will output True
+print(bar_run1 == foo2.run) # will output False
+print(bar_run1 == bar_run2) # will output False
+```
+
+Instead of having to subclass `Foo` and implement the new behavior, we can simply reuse the existing Foo class and attach on to its instances.
 
 ## What's missing?
 
@@ -143,6 +155,10 @@ SmokeSignal is another django inspired signal system.
 - It does not appear to support partials and lambdas.
 
 ## Changelog
+
+### 1.1.3
+
+* Basic support for retrieving a Signal's "sender", with some test coverage.
 
 ### 1.1.1
 

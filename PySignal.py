@@ -2,7 +2,7 @@ __author__ = "Dhruv Govil"
 __copyright__ = "Copyright 2016, Dhruv Govil"
 __credits__ = ["Dhruv Govil", "John Hood", "Jason Viloria", "Adric Worley", "Alex Widener"]
 __license__ = "MIT"
-__version__ = "1.1.1"
+__version__ = "1.1.3"
 __maintainer__ = "Dhruv Govil"
 __email__ = "dhruvagovil@gmail.com"
 __status__ = "Beta"
@@ -47,13 +47,23 @@ except ImportError:
                     return None
 
                 else:
-                    return types.MethodType(func, obj)
+                    return types.MethodType(func, obj, obj.__class__)
 
             elif self._func is not None:
                 return self._func()
 
             else:
                 return None
+
+        def __eq__(self, other):
+            try:
+                return type(self) is type(other) and self() == other()
+
+            except Exception:
+                return False
+
+        def __ne__(self, other):
+            return not self.__eq__(other)
 
 
 class Signal(object):
