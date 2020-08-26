@@ -206,6 +206,10 @@ class ClassSignal(object):
     _map = {}
 
     def __get__(self, instance, owner):
+        if instance is None:
+            # When we access ClassSignal element on the class object without any instance,
+            # we return the ClassSignal itself
+            return self
         tmp = self._map.setdefault(self, weakref.WeakKeyDictionary())
         return tmp.setdefault(instance, Signal())
 
