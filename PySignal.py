@@ -76,6 +76,9 @@ class Signal(object):
         self._block = False
         self._sender = None
         self._slots = []
+        
+    def __call__(self, *args, **kwargs):
+        self.emit(*args, **kwargs)
 
     def emit(self, *args, **kwargs):
         """
@@ -135,8 +138,8 @@ class Signal(object):
         if not callable(slot):
             raise ValueError("Connection to non-callable '%s' object failed" % slot.__class__.__name__)
 
-        if isinstance(slot, partial) or '<' in slot.__name__:
-            # If it's a partial or a lambda. The '<' check is the only py2 and py3 compatible way I could find
+        if isinstance(slot, (partial, Signal)) or '<' in slot.__name__:
+            # If it's a partial, a Signal or a lambda. The '<' check is the only py2 and py3 compatible way I could find
             if slot not in self._slots:
                 self._slots.append(slot)
         elif inspect.ismethod(slot):
@@ -168,8 +171,8 @@ class Signal(object):
                         (s[slotSelf] is slot.__func__)):
                     self._slots.remove(s)
                     break
-        elif isinstance(slot, partial) or '<' in slot.__name__:
-            # If it's a partial or lambda, try to remove directly
+        elif isinstance(slot, (partial, Signal)) or '<' in slot.__name__:
+            # If it's a partial, a Signal or lambda, try to remove directly
             try:
                 self._slots.remove(slot)
             except ValueError:
