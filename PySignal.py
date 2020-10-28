@@ -116,7 +116,7 @@ class Signal(object):
             if not slot:
                 continue
             elif isinstance(slot, partial):
-                slot()
+                slot(*args, **kwargs)
             elif isinstance(slot, weakref.WeakKeyDictionary):
                 # For class methods, get the class object and call the method accordingly.
                 for obj, method in slot.items():
