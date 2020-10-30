@@ -2,6 +2,8 @@
 
 [![Build Status](https://travis-ci.org/dgovil/PySignal.svg?branch=master)](https://travis-ci.org/dgovil/PySignal)
 
+**Deprecated**: I realize this library is used by a few people, but due to contractual limitations, I cannot currently maintain it. I recommend forking and developing the fork if possible. I apologize for the inconvenience.
+
 A Qt style signal implementation that doesn't require QObjects.
 This supports class methods, functions, lambdas and partials.
 
