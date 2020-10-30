@@ -4,6 +4,10 @@
 
 **Deprecated**: I realize this library is used by a few people, but due to contractual limitations, I cannot currently maintain it. I recommend forking and developing the fork if possible. I apologize for the inconvenience.
 
+For prior contributions to this repo, I made my contributions/submissions to this project solely in my personal capacity and am not conveying any rights to any intellectual property of any third parties.
+
+-----
+
 A Qt style signal implementation that doesn't require QObjects.
 This supports class methods, functions, lambdas and partials.
 
