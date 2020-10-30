@@ -20,7 +20,7 @@ Check out my website too for more programming and film related content: http://d
 
 ## Install
 
-You can install this using pip
+You can install this using pip, though the version on Pypi is outdated
 
 ```bash
 pip install PySignal
@@ -161,6 +161,10 @@ SmokeSignal is another django inspired signal system.
 - It does not appear to support partials and lambdas.
 
 ## Changelog
+
+### 1.1.4
+
+* Final release. This includes bugfixes from various parties but includes no contributions of my own. I am no longer able to maintain this repo. Please fork.
 
 ### 1.1.3
 
